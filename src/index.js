@@ -5,6 +5,7 @@ import * as graphExplorer from './components/graphExplorer.js';
 import * as settings from './settings.js';
 import * as userSettings from './components/userSettings.js';
 import * as userModel from './components/userModel.js';
+import './components/exportGraphML.js';
 
 let querystringParameters = new URLSearchParams(window.location.search);
 
