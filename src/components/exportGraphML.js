@@ -56,7 +56,7 @@ function exportGraphML(nodes, links) {
     gml += `          <y:Geometry x="${x}" y="${y}" width="${w}" height="${h}"/>\n`;
     gml += `          <y:Fill color="${fillColor}" transparent="false"/>\n`;
     gml += `          <y:BorderStyle color="#000000" type="line" width="1.0"/>\n`;
-    gml += `          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="10" fontStyle="plain" textColor="#000000" visible="true" modelName="internal" modelPosition="c">\n`;
+    gml += `          <y:NodeLabel alignment="center" autoSizePolicy="node_width" fontFamily="Dialog" fontSize="5" fontStyle="plain" textColor="#000000" visible="true" modelName="internal" modelPosition="c">\n`;
     gml += `            ${escapeXml(labelText)}\n`;
     gml += `          </y:NodeLabel>\n`;
     gml += `          <y:Shape type="rectangle"/>\n`;
