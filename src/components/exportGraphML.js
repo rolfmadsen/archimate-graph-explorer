@@ -1,5 +1,8 @@
 // exportGraphML.js
 
+import { exportForTesting } from './graphNode.js';
+const { colorForNodeType } = exportForTesting;
+
 /**
  * Escapes XML special characters.
  */
@@ -16,84 +19,8 @@ function escapeXml(str) {
 }
 
 /**
- * Simple color assignment for ArchiMate types.
- */
-function getFillColorForArchimateType(type) {
-  switch (type) {
-    case "ApplicationComponent":
-    case "ApplicationCollaboration":
-    case "ApplicationEvent":
-    case "ApplicationFunction":
-    case "ApplicationInteraction":
-    case "ApplicationInterface":
-    case "ApplicationProcess":
-    case "ApplicationService":
-    case "DataObject":
-      return "#b6f4f6";
-    case "BusinessActor":
-    case "BusinessCollaboration":
-    case "BusinessEvent":
-    case "BusinessFunction":
-    case "BusinessInteraction":
-    case "BusinessInterface":
-    case "BusinessObject":
-    case "BusinessProcess":
-    case "BusinessRole":
-    case "BusinessService":
-    case "Contract":
-    case "Product":
-    case "Representation":
-    case "Location":
-      return "#ffffb1";
-    case "Assessment":
-    case "Constraint":
-    case "Driver":
-    case "Goal":
-    case "Meaning":
-    case "Outcome":
-    case "Principle":
-    case "Requirement":
-    case "Stakeholder":
-    case "Value":
-      return "#ccf";
-    case "DistributionNetwork":
-    case "Equipment":
-    case "Facility":
-    case "Material":
-      return "#d1f6c5";
-    case "Artifact":
-    case "CommunicationNetwork":
-    case "Device":
-    case "Node":
-    case "Path":
-    case "SystemSoftware":
-    case "TechnologyCollaboration":
-    case "TechnologyEvent":
-    case "TechnologyFunction":
-    case "TechnologyInteraction":
-    case "TechnologyInterface":
-    case "TechnologyProcess":
-    case "TechnologyService":
-      return "#d1f6c5";
-    case "Capability":
-    case "CourseOfAction":
-    case "Resource":
-    case "ValueStream":
-      return "#f5deaa";
-    case "Deliverable":
-    case "Gap":
-    case "ImplementationEvent":
-    case "Plateau":
-    case "WorkPackage":
-      return "#ffe0e0";
-    default:
-      return "#fefefe";
-  }
-}
-
-/**
- * Build a simplified GraphML that yEd/yEd Live will interpret using
- * <y:ShapeNode> for nodes (no wrapping) and <y:PolyLineEdge> for edges.
+ * Build a simplified GraphML that yEd/yEd Live will interpret.
+ * Nodes are rendered using a <y:ShapeNode>.
  */
 function exportGraphML(nodes, links) {
   let gml = `<?xml version="1.0" encoding="utf-8"?>\n`;
@@ -103,23 +30,21 @@ function exportGraphML(nodes, links) {
     xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
       http://www.yworks.com/xml/schema/graphml/1.0/ygraphml.xsd">\n`;
 
-  // Define keys for node graphics, edge graphics, plus optional "description" keys.
+  // Define keys for node graphics and edge graphics.
   gml += `  <key for="node" id="d0" yfiles.type="nodegraphics"/>\n`;
   gml += `  <key attr.name="description" attr.type="string" for="node" id="d1"/>\n`;
   gml += `  <key for="edge" id="d2" yfiles.type="edgegraphics"/>\n`;
   gml += `  <key attr.name="description" attr.type="string" for="edge" id="d3"/>\n`;
-  gml += `  <key for="graphml" id="d4" yfiles.type="resources"/>\n`;
 
-  // Start the graph
+  // Start the graph.
   gml += `  <graph id="G" edgedefault="directed">\n`;
 
   // --- NODES ---
   nodes.forEach(n => {
     const nodeId = escapeXml(n.id);
     const labelText = (n.name || "") + (n.type ? ` (${n.type})` : "");
-    const fillColor = getFillColorForArchimateType(n.type);
-
-    // Use default geometry; if your node objects include positions, you can use them.
+    const fillColor = colorForNodeType(n.type);
+    // Use default geometry; adjust as needed.
     const x = (n.x !== undefined) ? parseFloat(n.x) : 0;
     const y = (n.y !== undefined) ? parseFloat(n.y) : 0;
     const w = 100;
@@ -129,9 +54,9 @@ function exportGraphML(nodes, links) {
     gml += `      <data key="d0">\n`;
     gml += `        <y:ShapeNode>\n`;
     gml += `          <y:Geometry x="${x}" y="${y}" width="${w}" height="${h}"/>\n`;
-    gml += `          <y:Fill color="${fillColor}" transparent="true"/>\n`;
+    gml += `          <y:Fill color="${fillColor}" transparent="false"/>\n`;
     gml += `          <y:BorderStyle color="#000000" type="line" width="1.0"/>\n`;
-    gml += `          <y:NodeLabel alignment="center" fontFamily="Dialog" fontSize="5" fontStyle="plain" textColor="#000000" visible="true" modelName="internal" modelPosition="c">\n`;
+    gml += `          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="10" fontStyle="plain" textColor="#000000" visible="true" modelName="internal" modelPosition="c">\n`;
     gml += `            ${escapeXml(labelText)}\n`;
     gml += `          </y:NodeLabel>\n`;
     gml += `          <y:Shape type="rectangle"/>\n`;
@@ -142,7 +67,7 @@ function exportGraphML(nodes, links) {
 
   // --- EDGES ---
   links.forEach((l, index) => {
-    // l.source and l.target may be objects or IDs; extract the id.
+    // l.source and l.target may be objects or IDs.
     const sourceId = typeof l.source === "object" ? l.source.id : l.source;
     const targetId = typeof l.target === "object" ? l.target.id : l.target;
     const edgeId = `e${index}`;
@@ -151,18 +76,15 @@ function exportGraphML(nodes, links) {
     gml += `      <data key="d2">\n`;
     gml += `        <y:PolyLineEdge>\n`;
     gml += `          <y:LineStyle color="#000000" type="line" width="1.0"/>\n`;
-    gml += `          <y:Arrows source="none" target="none"/>\n`;
-    gml += `          <y:BendStyle smoothed="false"/>\n`;
+    gml += `          <y:Arrows source="none" target="standard"/>\n`;
+    gml += `          <y:BendStyle smoothed="true"/>\n`;
     gml += `        </y:PolyLineEdge>\n`;
     gml += `      </data>\n`;
     gml += `    </edge>\n`;
   });
 
-  // End graph + resources block
+  // End graph.
   gml += `  </graph>\n`;
-  gml += `  <data key="d4">\n`;
-  gml += `    <y:Resources/>\n`;
-  gml += `  </data>\n`;
   gml += `</graphml>\n`;
   return gml;
 }
@@ -183,8 +105,8 @@ function downloadTextAsFile(text, filename) {
 }
 
 /**
- * Main export function: read data from sessionStorage, ensure all nodes referenced in links exist,
- * build GraphML, and trigger download.
+ * Main export function: reads graph data from sessionStorage, ensures all nodes referenced in links exist,
+ * builds GraphML, and triggers download.
  */
 function exportGraphMLFromSession() {
   const graphDataString = sessionStorage.getItem("archiGraphDataStore");
@@ -194,45 +116,27 @@ function exportGraphMLFromSession() {
   }
   const graphData = JSON.parse(graphDataString);
 
-  // If graphData.nodes is not an array (it could be an object), convert to an array.
+  // Convert nodes to an array if necessary.
   let nodes = Array.isArray(graphData.nodes)
     ? graphData.nodes
     : Object.values(graphData.nodes || {});
   const links = graphData.links || [];
 
-  // Build a map of existing nodes by id.
+  // Ensure every link’s source and target exist as nodes.
   const nodeMap = {};
   nodes.forEach(n => {
     nodeMap[n.id] = n;
   });
-
-  // For every link, if its source or target is not in nodeMap, add a default node.
   links.forEach(link => {
     const sourceId = typeof link.source === "object" ? link.source.id : link.source;
     const targetId = typeof link.target === "object" ? link.target.id : link.target;
     if (!nodeMap[sourceId]) {
-      // Create a default node for the missing source
-      nodeMap[sourceId] = {
-        id: sourceId,
-        name: sourceId,
-        type: "Undefined",
-        x: 0,
-        y: 0
-      };
+      nodeMap[sourceId] = { id: sourceId, name: sourceId, type: "Undefined", x: 0, y: 0 };
     }
     if (!nodeMap[targetId]) {
-      // Create a default node for the missing target
-      nodeMap[targetId] = {
-        id: targetId,
-        name: targetId,
-        type: "Undefined",
-        x: 0,
-        y: 0
-      };
+      nodeMap[targetId] = { id: targetId, name: targetId, type: "Undefined", x: 0, y: 0 };
     }
   });
-
-  // Rebuild the nodes array from the nodeMap.
   nodes = Object.values(nodeMap);
 
   const graphmlText = exportGraphML(nodes, links);
@@ -240,7 +144,7 @@ function exportGraphMLFromSession() {
   downloadTextAsFile(graphmlText, fileName);
 }
 
-// Attach the export function to a button if desired:
+// Attach the export function to a button if desired.
 document.addEventListener("DOMContentLoaded", () => {
   const exportBtn = document.getElementById("exportGraphMLButton");
   if (exportBtn) {
@@ -248,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Optionally export these if needed in other modules
+// Optionally export functions for use in other modules.
 export {
   exportGraphML,
   downloadTextAsFile,
