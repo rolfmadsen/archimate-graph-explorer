@@ -67,9 +67,15 @@ function exportGraphML(nodes, links) {
 
   // --- EDGES ---
   links.forEach((l, index) => {
-    // l.source and l.target may be objects or IDs.
-    const sourceId = typeof l.source === "object" ? l.source.id : l.source;
-    const targetId = typeof l.target === "object" ? l.target.id : l.target;
+    let sourceId = typeof l.source === "object" ? l.source.id : l.source;
+    let targetId = typeof l.target === "object" ? l.target.id : l.target;
+
+    // Flip certain Archimate relationships to visually match the layered flow in yEd.
+    // Adjust the condition below for the relationships you want reversed.
+    if (l.type === "Realization" || l.type === "Serving") {
+      [sourceId, targetId] = [targetId, sourceId];
+    }
+
     const edgeId = `e${index}`;
 
     gml += `    <edge id="${escapeXml(edgeId)}" source="${escapeXml(sourceId)}" target="${escapeXml(targetId)}">\n`;
