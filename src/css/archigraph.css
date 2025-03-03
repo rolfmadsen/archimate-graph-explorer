@@ -206,6 +206,24 @@ dialog::backdrop {
     display: none;
 }
 
+/* For the selected node and its neighbor nodes: make the outlines thicker */
+#nodes g.highlighted circle,
+#nodes g.highlighted path.node-icon,
+#nodes g.neighbor-highlight circle,
+#nodes g.neighbor-highlight path.node-icon {
+  stroke-width: 2px !important;
+}
+
+/* For the connecting edges: make the stroke thicker */
+.link-highlight {
+    stroke-width: 2px !important;
+    stroke: #2962FF !important;
+  }
+
+#canvas-bg {
+pointer-events: all;
+}
+  
 @media only screen and (min-width: 600px) {
     .filter-container {
         display: inline-block;

@@ -5,6 +5,7 @@
     "start": "serve -s . -l $PORT"
   },
   "dependencies": {
+    "dagre": "^0.8.5",
     "serve": "^14.0.1"
   }
 }
