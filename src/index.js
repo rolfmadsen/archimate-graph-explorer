@@ -8,7 +8,9 @@ import * as userModel from './components/userModel.js';
 import './components/exportGraphML.js';
 import { setupFilters } from './components/filterBar.js';
 
-let querystringParameters = new URLSearchParams(window.location.search);
+let querystringParameters = typeof window !== "undefined"
+  ? new URLSearchParams(window.location.search)
+  : new URLSearchParams();
 
 function reDrawFromSession() {
   const graphData = dataAccess.requestDataFromStore();
