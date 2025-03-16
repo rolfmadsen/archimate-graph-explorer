@@ -6,6 +6,7 @@ export default defineConfig({
     exclude: ['kuzu-wasm']
   },
   build: {
+    outDir: 'dist',
     chunkSizeWarningLimit: 600, // Increase warning limit to 600 kB
     rollupOptions: {
       output: {
