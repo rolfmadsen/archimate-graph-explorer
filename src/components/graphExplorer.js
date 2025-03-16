@@ -2,6 +2,7 @@
 
 import * as nodeUtils from './graphNode.js';
 import * as linkUtils from './graphLink.js';
+import * as dataAccess from './dataAccess.js';
 
 /**
  * Helper: Returns the ID of an endpoint.
@@ -96,14 +97,12 @@ function drawGraph(nodes, pinnedNodeId, links, containerElement, callback) {
     event.stopPropagation();
     const depth = parseInt(document.getElementById("depthSlider").value, 10);
     document.getElementById("loading-message").style.display = "block";
-    import('./dataAccess.js').then(module => {
-      module.kuzuNeighborhoodGraph(d.id, depth, (subgraph) => {
-        document.getElementById("loading-message").style.display = "none";
-        // Re-draw the graph with the new subgraph.
-        drawGraph(subgraph.nodes, null, subgraph.links, containerElement);
-      });
+    dataAccess.kuzuNeighborhoodGraph(d.id, depth, (subgraph) => {
+      document.getElementById("loading-message").style.display = "none";
+      // Re-draw the graph with the new subgraph.
+      drawGraph(subgraph.nodes, null, subgraph.links, containerElement);
     });
-  });
+  });  
 
   // Enable dragging on nodes.
   const dragHandler = d3.drag()
