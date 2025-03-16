@@ -225,12 +225,14 @@ function exportGraphMLFromSession() {
 }
 
 // Attach the export function to a button if desired.
-document.addEventListener("DOMContentLoaded", () => {
-  const exportBtn = document.getElementById("exportGraphMLButton");
-  if (exportBtn) {
-    exportBtn.addEventListener("click", exportGraphMLFromSession);
-  }
-});
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    const exportBtn = document.getElementById("exportGraphMLButton");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", exportGraphMLFromSession);
+    }
+  });
+}
 
 // Optionally export functions for use in other modules.
 export {
