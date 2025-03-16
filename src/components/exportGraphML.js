@@ -23,6 +23,69 @@ function escapeXml(str) {
  * Nodes are rendered using a <y:ShapeNode>.
  */
 function exportGraphML(nodes, links) {
+  // Define layer ordering based on ArchiMate element types.
+  // Lower number = higher layer.
+  const layerMapping = {
+    // Strategy
+    "Capability": 1,
+    "CourseOfAction": 1,
+    "Resource": 1,
+    "ValueStream": 1,
+
+    // Business
+    "BusinessActor": 2,
+    "BusinessCollaboration": 2,
+    "BusinessEvent": 2,
+    "BusinessFunction": 2,
+    "BusinessInteraction": 2,
+    "BusinessInterface": 2,
+    "BusinessObject": 2,
+    "BusinessProcess": 2,
+    "BusinessRole": 2,
+    "BusinessService": 2,
+    "Contract": 2,
+    "Product": 2,
+    "Representation": 2,
+
+    // Application
+    "ApplicationComponent": 3,
+    "ApplicationCollaboration": 3,
+    "ApplicationEvent": 3,
+    "ApplicationFunction": 3,
+    "ApplicationInteraction": 3,
+    "ApplicationInterface": 3,
+    "ApplicationProcess": 3,
+    "ApplicationService": 3,
+    "DataObject": 3,
+
+    // Technology
+    "Artifact": 4,
+    "CommunicationNetwork": 4,
+    "Device": 4,
+    "Node": 4,
+    "Path": 4,
+    "SystemSoftware": 4,
+    "TechnologyCollaboration": 4,
+    "TechnologyEvent": 4,
+    "TechnologyFunction": 4,
+    "TechnologyInteraction": 4,
+    "TechnologyInterface": 4,
+    "TechnologyProcess": 4,
+    "TechnologyService": 4,
+
+    // Physical
+    "Distribution Network": 5,
+    "Equipment": 5,
+    "Facility": 5,
+    "Material": 5
+  };
+
+  // Build a mapping from node id to node type.
+  const nodeTypeMapping = {};
+  nodes.forEach(n => {
+    nodeTypeMapping[n.id] = n.type;
+  });
+
   let gml = `<?xml version="1.0" encoding="utf-8"?>\n`;
   gml += `<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -70,10 +133,21 @@ function exportGraphML(nodes, links) {
     let sourceId = typeof l.source === "object" ? l.source.id : l.source;
     let targetId = typeof l.target === "object" ? l.target.id : l.target;
 
-    // Flip certain Archimate relationships to visually match the layered flow in yEd.
-    // Adjust the condition below for the relationships you want reversed.
-    if (l.type === "Realization" || l.type === "Serving") {
-      [sourceId, targetId] = [targetId, sourceId];
+    // If both nodes have known layer orders, ensure that the higher-layer element (lower number)
+    // is set as the source. This will supply data so that yEd's hierarchical layout will place
+    // nodes in the desired top-to-bottom order.
+    const srcType = nodeTypeMapping[sourceId];
+    const tgtType = nodeTypeMapping[targetId];
+    if (layerMapping[srcType] && layerMapping[tgtType]) {
+      if (layerMapping[srcType] > layerMapping[tgtType]) {
+        [sourceId, targetId] = [targetId, sourceId];
+      }
+    } else {
+      // Fallback: for relationships known to be inverted in Archimate (e.g. Realization or Serving),
+      // you could still check the relationship type here.
+      if (l.type === "Realization" || l.type === "Serving") {
+        [sourceId, targetId] = [targetId, sourceId];
+      }
     }
 
     const edgeId = `e${index}`;

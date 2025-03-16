@@ -1,11 +1,18 @@
 {
   "name": "archimate-graph-explorer",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "start": "serve -s . -l $PORT"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "dagre": "^0.8.5",
+    "kuzu-wasm": "^0.8.2",
     "serve": "^14.0.1"
+  },
+  "devDependencies": {
+    "vite": "^6.2.1"
   }
 }

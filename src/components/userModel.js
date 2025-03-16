@@ -2,35 +2,33 @@ import * as dataAccess from './dataAccess.js';
 import * as userSettings from './userSettings.js';
 
 const modelFileLoad = (e, callback) => {
-    const droppedFiles = e.dataTransfer.files;
-    if (droppedFiles.length > 1) {
-        alert("Oops, only one file can be loaded!");
+    const droppedFiles = e.dataTransfer?.files || e.target.files;
+    if (!droppedFiles || droppedFiles.length === 0) {
+        alert("No files were detected. Please try again.");
         return;
     }
 
-    const droppedFile = e.dataTransfer.files[0];
-    if (!['.xml', '.archimate'].some(ext => droppedFile.name.endsWith(ext))) {     
-        alert("Oops, it must be and .xml or .archimate file! Please ensure it is an ArchiMate Exchange Format or Archi file.");
+    const droppedFile = droppedFiles[0];
+    if (!['.xml', '.archimate'].some(ext => droppedFile.name.endsWith(ext))) {
+        alert("Oops, it must be an .xml or .archimate file! Please ensure it is an ArchiMate Exchange Format or Archi file.");
         return;
     }
-    
+
     const msg = document.getElementById('userModelLoad-dragDrop-message');
     msg.innerText = `Loading: ${droppedFile.name}`;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-        dataAccess.processModelFile(e.target.result);
-
-        userSettings.updateSetting("userLoadedModel", true);
-        userSettings.updateSetting("userLoadedModelFilename", droppedFile.name);
-
-        document.getElementById('userModelLoad-delete').classList.remove('hidden');
-
-        msg.innerText = `The ${droppedFile.name} file has been loaded into your browser's session storage.`;
-        callback();
+    reader.onload = () => {
+        dataAccess.processModelFile(reader.result, () => {
+            userSettings.updateSetting("userLoadedModel", true);
+            userSettings.updateSetting("userLoadedModelFilename", droppedFile.name);
+            document.getElementById('userModelLoad-delete').classList.remove('hidden');
+            msg.innerText = `The ${droppedFile.name} file has been loaded.`;
+            if (typeof callback === "function") callback();
+        });
     };
     reader.readAsText(droppedFile);
-}
+};
 
 const modelFileDelete = () => {
     const userLoadedModelFilename = userSettings.getSetting('userLoadedModelFilename');

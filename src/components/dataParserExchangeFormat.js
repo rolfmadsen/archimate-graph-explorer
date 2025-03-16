@@ -1,91 +1,142 @@
+// dataParserExchangeFormat.js
 
-const parsePropertyDefinitionsFromXml = (xml) => {
-    // Create a JSON map of the property definitions from the exchange format file xml
-    const propertyDefinitionsMap = [].map.call(xml.querySelectorAll("propertyDefinition"), (e) => {
-        return {
-            propertyDefinitionRef: e.getAttribute("identifier"),
-            name: e.querySelector("name").textContent
-        };
-    }).reduce((map, obj) => {
-        map[obj.propertyDefinitionRef] = obj.name;
-        return map;
+// Build a map of propertyDefinitionRef -> propertyDefinitionName
+function parsePropertyDefinitionsFromXml(xml) {
+    const propDefs = xml.querySelectorAll("model > propertyDefinitions > propertyDefinition");
+    if (!propDefs || propDefs.length === 0) {
+      console.warn("No propertyDefinition tags found under <model><propertyDefinitions>");
+    }
+    const propertyDefinitionsMap = Array.from(propDefs).reduce((acc, def) => {
+      const identifier = def.getAttribute("identifier");
+      const nameElem = def.querySelector("name");
+      const name = nameElem ? nameElem.textContent : "unknown";
+      acc[identifier] = name;
+      return acc;
     }, {});
-
+    console.log("🔎 propertyDefinitionsMap:", propertyDefinitionsMap);
     return propertyDefinitionsMap;
-};
-
-const parseNodesFromXml = (xml, propertyDefinitionsMap) => {
-    const nodes = [].map.call(xml.querySelectorAll("element"), (e) => {
+  }
+  
+  // Parse nodes from <model><elements><element>
+  function parseNodesFromXml(xml, propertyDefinitionsMap) {
+    // The standard ArchiMate exchange format: <model><elements>
+    const elementsContainer = xml.querySelector("model > elements");
+    if (!elementsContainer) {
+      console.warn("No <elements> container found under <model>.");
+      return [];
+    }
+    // Grab the <element> nodes
+    const elementElems = elementsContainer.querySelectorAll("element");
+    console.log(`🔎 Found ${elementElems.length} <element> tags under <model><elements>.`);
+    
+    // Filter out diagram references like archimate:ArchimateDiagramModel
+    const nodes = Array.from(elementElems)
+      .filter(el => {
+        const xsiType = el.getAttribute("xsi:type") || el.getAttribute("type");
+        return !xsiType?.includes("ArchimateDiagramModel");
+      })
+      .map(el => {
+        const id = el.getAttribute("identifier") || "no-id";
+        const xsiType = el.getAttribute("xsi:type") || el.getAttribute("type") || "Element";
+        const nameElem = el.querySelector("name");
+        const documentationElem = el.querySelector("documentation");
+        
+        // Parse properties
+        const properties = {};
+        el.querySelectorAll("property").forEach(prop => {
+          const refId = prop.getAttribute("propertyDefinitionRef");
+          const propName = propertyDefinitionsMap[refId] || "unknown";
+          const valueElem = prop.querySelector("value");
+          properties[propName.toLowerCase()] = valueElem ? valueElem.textContent : "";
+        });
+  
         return {
-            id: e.getAttribute("identifier"),
-            type: e.getAttribute("xsi:type"),
-            name: (e.querySelector("name") ? e.querySelector("name").textContent : ""), 
-            documentation: (e.querySelector("documentation") ? e.querySelector("documentation").textContent : ""), 
-            properties: ([].map.call(e.querySelectorAll("property"), (p) => {
-                return { 
-                    name: propertyDefinitionsMap[p.getAttribute("propertyDefinitionRef")],
-                    value: p.querySelector("value").textContent
-                };
-            })).reduce((map, obj) => {
-                map[obj.name.toLowerCase()] = obj.value;
-                return map;
-            }, {})
+          id,
+          type: xsiType,
+          name: nameElem ? nameElem.textContent : "",
+          documentation: documentationElem ? documentationElem.textContent : "",
+          properties
         };
-    });
-
+      });
+  
+    console.log("✅ Parsed Nodes:", nodes);
     return nodes;
-};
-
-const parseLinksFromXml = (xml, propertyDefinitionsMap) => {
-    const links = [].map.call(xml.querySelectorAll("relationship"), (r) => {
-        return {
-            id: r.getAttribute("identifier"),
-            type: r.getAttribute("xsi:type"),
-            name: (r.querySelector("name") ? r.querySelector("name").textContent : ""), 
-            documentation: (r.querySelector("documentation") ? r.querySelector("documentation").textContent : ""),
-            source: r.getAttribute("source"),
-            target: r.getAttribute("target"),
-            accessType: r.getAttribute("accessType"),
-            properties: ([].map.call(r.querySelectorAll("property"), (p) => {
-                return { 
-                    name: propertyDefinitionsMap[p.getAttribute("propertyDefinitionRef")],
-                    value: p.querySelector("value").textContent
-                };
-            })).reduce((map, obj) => {
-                map[obj.name.toLowerCase()] = obj.value;
-                return map;
-            }, {})
-        };
+  }
+  
+  // Parse relationships (links) from <model><relationships><relationship>
+  function parseLinksFromXml(xml, propertyDefinitionsMap) {
+    const relationshipsContainer = xml.querySelector("model > relationships");
+    if (!relationshipsContainer) {
+      console.warn("No <relationships> container found under <model>.");
+      return [];
+    }
+    const relationshipElems = relationshipsContainer.querySelectorAll("relationship");
+    console.log(`🔎 Found ${relationshipElems.length} <relationship> tags under <model><relationships>.`);
+  
+    const links = Array.from(relationshipElems).map(r => {
+      const id = r.getAttribute("identifier") || "no-rel-id";
+      const xsiType = r.getAttribute("xsi:type") || r.getAttribute("type") || "Relationship";
+      const nameElem = r.querySelector("name");
+      const documentationElem = r.querySelector("documentation");
+      const source = r.getAttribute("source")?.trim() || null;
+      const target = r.getAttribute("target")?.trim() || null;
+  
+      // Parse relationship properties
+      const properties = {};
+      r.querySelectorAll("property").forEach(prop => {
+        const refId = prop.getAttribute("propertyDefinitionRef");
+        const propName = propertyDefinitionsMap[refId] || "unknown";
+        const valueElem = prop.querySelector("value");
+        properties[propName.toLowerCase()] = valueElem ? valueElem.textContent : "";
+      });
+  
+      return {
+        id,
+        type: xsiType,
+        name: nameElem ? nameElem.textContent : "",
+        documentation: documentationElem ? documentationElem.textContent : "",
+        source,
+        target,
+        properties
+      };
     });
-
+  
+    console.log("✅ Parsed Links:", links);
     return links;
-};
-
-const convertXmlToJson = (xml) => {
-    const modelName = xml.querySelector("model > name") ? xml.querySelector("model > name").textContent : "";
-    const modelDocumentation = xml.querySelector("model > documentation") ? xml.querySelector("model > documentation").textContent : "";
-
+  }
+  
+  // Convert the entire ArchiMate Model XML to a simple JSON object
+  function convertXmlToJson(xml) {
+    const model = xml.querySelector("model");
+    if (!model) {
+      console.warn("No <model> element found in the XML.");
+      return { modelName: "Unnamed Model", modelDocumentation: "", nodes: [], links: [] };
+    }
+  
+    const nameElem = model.querySelector("name");
+    const documentationElem = model.querySelector("documentation");
+    const modelName = nameElem ? nameElem.textContent : "Unnamed Model";
+    const modelDocumentation = documentationElem ? documentationElem.textContent : "";
+  
     const propertyDefinitionsMap = parsePropertyDefinitionsFromXml(xml);
     const nodes = parseNodesFromXml(xml, propertyDefinitionsMap);
     const links = parseLinksFromXml(xml, propertyDefinitionsMap);
-
-    const graphDataJson = {
-        modelName: modelName,
-        modelDocumentation: modelDocumentation,
-        nodes: nodes,
-        links: links
+  
+    console.log("🎯 Final Graph Data JSON:", {
+      modelName,
+      modelDocumentation,
+      nodesCount: nodes.length,
+      linksCount: links.length
+    });
+  
+    return {
+      modelName,
+      modelDocumentation,
+      nodes,
+      links
     };
-
-    return graphDataJson;
-};
-
-const exportForTesting = {
-    parsePropertyDefinitionsFromXml,
-    parseNodesFromXml,
-    parseLinksFromXml
-}
-
-export { 
-    convertXmlToJson,
-    exportForTesting
-}; 
+  }
+  
+  export {
+    convertXmlToJson
+  };  
