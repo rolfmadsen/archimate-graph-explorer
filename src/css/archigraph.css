@@ -83,6 +83,16 @@ header h1 {
   box-sizing: border-box;
 }
 
+.facet-values {
+  display: block;
+}
+
+.facet-values label {
+  display: block !important;
+  width: 100%;
+  margin: 2px 0;
+}
+
 /* The main content (graph) */
 #main-content {
   flex: 1; /* fill the remaining space */
