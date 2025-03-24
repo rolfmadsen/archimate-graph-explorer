@@ -1,212 +1,290 @@
-BODY {
-    margin: 0;
-    font-family: Tahoma, Verdana, Geneva, sans-serif;
-    font-size: 9pt;
-    background-color: #fff;
+/* archigraph.css */
+
+/* Basic resets for the page layout */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
+body {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  font-size: 9pt;
+  background-color: #fff;
+  /* We'll handle layout for the main container separately. */
+}
+
+/* STEP 2A: Header container */
 header {
-    background-color: #444;
-    color: #fff;
-    height: 2.4em;
+  background-color: #444;
+  color: #fff;
+  height: 60px;
+  line-height: 60px;    /* So text/inline SVG icons are vertically centered. */
+  overflow: auto;       /* Helps contain floats inside the header. */
+  box-sizing: border-box;
+  padding: 0 10px;      /* Left/Right padding for breathing room. */
 }
-H1 {
-    margin: 0;
-    font-size: 120%;
-    display: inline-block;
-    padding: 0.4em 0.4em 0.4em 0.6em;
-}
-H4 {
-    margin: 1.6em 0 0 0;
-}
+
+/* The logo area: floated left */
 #header-logo {
-    float: left;    
-    height: 2.1em;
-    width: 1.8em;
-    padding: 0.3em 0 0 0.25em;
-    background-color: #0088ff;
+  float: left;
+  display: inline-block;
+  width: 60px;          /* Or any width you prefer. */
+  height: 60px;
+  background-color: #0088ff; /* remove if you don't want a colored box. */
+  text-align: center;   /* so the SVG is roughly centered horizontally. */
 }
-#header-logo svg g {
-    fill: #0088ff;
-    stroke: #eee;
-    stroke-width: 1.4;
+
+/* The header title: also floated left, next to the logo */
+header h1 {
+  float: left;
+  margin: 0;
+  padding: 0 10px;      /* Some left/right spacing. */
+  font-size: 1.4em;
+  line-height: 60px;    /* matches header line-height for vertical alignment. */
 }
+
+/* The container for the icons: floated right */
 #header-right {
-    float: right;
-    padding: 0.3em;
+  float: right;
+  display: inline-block;
+  line-height: 60px;    /* keep icons vertically aligned. */
 }
+
+/* Each icon wrapper in the header: you can tweak spacing. */
 .header-action {
-    float: right;
-    margin: 0 0.3em;
+  display: inline-block;
+  margin-left: 10px; /* spacing between icons if needed */
+}
+
+/* Make the actual icons align in the middle if needed. */
+.header-action svg {
+  vertical-align: middle;
+}
+
+/* STEP 2B: The rest of your page layout (main container, sidebar, etc.) */
+#main-container {
+  /* If you want a full-height layout, you might do a flex container in the body,
+     or keep it simple with normal flow. For example: */
+  height: calc(100% - 60px); /* if the header is 60px tall. */
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+}
+
+/* The left sidebar */
+#facet-sidebar {
+  width: 250px;
+  border-right: 1px solid #ccc;
+  overflow-y: auto;
+  background: #f7f7f7;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* The main content (graph) */
+#main-content {
+  flex: 1; /* fill the remaining space */
+  position: relative;
+  overflow: auto;
+}
+
+#graph-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Loading message & summary text */
+#loading-message,
+#search-result-summary {
+  position: absolute;
+  z-index: 10;
 }
 
 #loading-message {
-    position: absolute; 
-    top: 50%;
-    left: calc(50% - 2rem);
-    font-size: 140%;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 5px;
+  border: 1px solid #ccc;
 }
 
-#search-result-summary {
-    position: absolute;
-    bottom: 0;
-    left: 6px;
-    line-height: 2em;
-    color: #aaa;
-    font-size: 90%;
+/* Dialogs */
+dialog {
+  width: 100%;
 }
 
-#dialog-overview,
-#dialog-userSettings {
-    background-color: #fff;
-    color: #666;
-    text-align: left;
-    border: none;
-    padding: 0.6rem 1.6rem;
-    box-shadow: 0 0 30px rgba(0,0,0,0.1), 0 0 10px rgba(0,0,0,0.25);
-    max-width: 80vw;
-}
 dialog::backdrop {
-    background: rgba(100,100,100,.5);
+  background: rgba(100, 100, 100, 0.5);
 }
+
 .dialog-button-container {
-    display: flex;
-    justify-content: space-around;
-    margin: 2em 0 1.4em 0;
+  display: flex;
+  justify-content: space-around;
+  margin: 2em 0 1.4em 0;
 }
+
 .dialog-button,
 .userSetting-button {
-    background-color: #666; 
-    border: none;
-    color: white;
-    padding: 0.5em 1em;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
+  background-color: #666;
+  border: none;
+  color: white;
+  padding: 0.5em 1em;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
 }
+
 .dialog-close-x {
-    float: right;
-    font-weight: bold;
-    color: #bbb;
-    font-size: 120%;
-    margin-top: 0.4em;
-    cursor: pointer;
+  float: right;
+  font-weight: bold;
+  color: #bbb;
+  font-size: 120%;
+  margin-top: 0.4em;
+  cursor: pointer;
 }
+
 .dialog-checkbox {
-    float: right;
-    margin: 1em 0.6em 0 0.2em;
+  float: right;
+  margin: 1em 0.6em 0 0.2em;
 }
 
+/* Drag/drop zone for user model load */
 #userModelLoad-dragDrop-zone {
-    width: 16em;
-    height: 4.6em;
-    border: 2px dashed #888;
-    background-color: #eee;
-    padding: 1em 2em;
-    margin: 1em auto;
+  width: 16em;
+  height: 4.6em;
+  border: 2px dashed #888;
+  background-color: #eee;
+  padding: 1em 2em;
+  margin: 1em auto;
 }
+
 #userModelLoad-dragDrop-zone p {
-    color: #999;
-    font-weight: bold;
-    text-align: center;
+  color: #999;
+  font-weight: bold;
+  text-align: center;
 }
+
 #userModelLoad-dragDrop-zone:hover {
-    border-width: 3px;
+  border-width: 3px;
 }
+
 #userModelLoad-dragDrop-message {
-    margin: 0.5em 0;
-    color: rgb(0, 116, 0);
-    font-weight: bold;
+  margin: 0.5em 0;
+  color: rgb(0, 116, 0);
+  font-weight: bold;
 }
 
+/* Filter bar, facets, etc. */
 #filter-bar {
-    position: fixed;
-    margin: 8px;
-}
-.filter-hidden {
-    display: none!important;
-}
-.filter-container {
-    display: block;
-    margin: 0.3em;
-    background-color: rgba(255, 255, 255, 0.6);
-}
-.filter-checkbox {
-    transform: scale(1.3);
-}
-.filter-checkbox-label {
-    white-space: nowrap;
+  position: fixed;
+  margin: 8px;
 }
 
-#links line {
-    stroke: #666;
-    stroke-width: 1px;
+.filter-hidden {
+  display: none !important;
 }
+
+.filter-container {
+  display: block;
+  margin: 0.3em;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.filter-checkbox {
+  transform: scale(1.3);
+}
+
+.filter-checkbox-label {
+  white-space: nowrap;
+}
+
+/* Relationship lines & arrowheads */
+#links line {
+  stroke: #666;
+  stroke-width: 1px;
+}
+
 .relationship-arrow-open,
 .relationship-arrow-closed,
 .relationship-arrowlarge-open,
 .relationship-diamond-open,
 .relationship-diamond-closed,
 .relationship-circle-closed {
-    stroke:#666;
-    stroke-width: 1.8px;
-    fill: none;
+  stroke: #666;
+  stroke-width: 1.8px;
+  fill: none;
 }
+
 .relationship-arrow-closed,
 .relationship-diamond-closed,
 .relationship-circle-closed {
-    fill: #666;
-}      
+  fill: #666;
+}
+
 .relationship-arrowlarge-open,
 .relationship-diamond-open {
-    fill: #fff;
+  fill: #fff;
 }
+
 .relationship-access,
 .relationship-realization {
-    stroke-dasharray: 3;
+  stroke-dasharray: 3;
 }
+
 .relationship-influence,
 .relationship-flow {
-    stroke-dasharray: 8, 4;
+  stroke-dasharray: 8, 4;
 }
 
+/* Node circles & icons */
 #nodes g circle {
-    stroke: #666;
-    stroke-width: 0.8px;
+  stroke: #666;
+  stroke-width: 0.8px;
 }
+
 .node-fixed circle {
-    stroke-width: 2px!important;
+  stroke-width: 2px !important;
 }
+
 .node-root circle {
-    stroke-width: 3px!important;
+  stroke-width: 3px !important;
 }
+
 .node-icon {
-    fill: none;
-    stroke: #666;
-    stroke-width: 1;
+  fill: none;
+  stroke: #666 !important;
+  stroke-width: 1;
 }
+
 .element-plateau > .node-icon {
-    stroke-width: 1.4;
+  stroke-width: 1.4;
 }
+
 .element-andjunction > .node-icon {
-    fill: #666;
+  fill: #666 !important;
 }
+
 .node-label-type {
-    font-size: 6pt;
+  font-size: 6pt;
 }
+
 .node-label-name {
-    font-size: 7pt;
-}
-.element-grouping circle {    
-    stroke-dasharray: 4, 2;
+  font-size: 7pt;
 }
 
+.element-grouping circle {
+  stroke-dasharray: 4, 2;
+}
+
+/* Generic hidden class */
 .hidden {
-    display: none;
+  display: none;
 }
 
-/* For the selected node and its neighbor nodes: make the outlines thicker */
+/* Highlights */
 #nodes g.highlighted circle,
 #nodes g.highlighted path.node-icon,
 #nodes g.neighbor-highlight circle,
@@ -214,31 +292,31 @@ dialog::backdrop {
   stroke-width: 2px !important;
 }
 
-/* For the connecting edges: make the stroke thicker */
 .link-highlight {
-    stroke-width: 2px !important;
-    stroke: #2962FF !important;
-  }
-
-#canvas-bg {
-pointer-events: all;
+  stroke-width: 2px !important;
+  stroke: #2962FF !important;
 }
-  
-@media only screen and (min-width: 600px) {
-    .filter-container {
-        display: inline-block;
-    }
-    .filter-checkbox {
-        position: relative;
-        top: -3px;
-    }
-    .filter-checkbox-label {
-        position: relative;
-        top: -5px;
-    }
 
-    #dialog-overview,
-    #dialog-userSettings {
-        max-width: 560px;
-    }
+/* Canvas background for click events */
+#canvas-bg {
+  pointer-events: all;
+}
+
+/* Responsive adjustments for filter bar, etc. */
+@media only screen and (min-width: 600px) {
+  .filter-container {
+    display: inline-block;
+  }
+  .filter-checkbox {
+    position: relative;
+    top: -3px;
+  }
+  .filter-checkbox-label {
+    position: relative;
+    top: -5px;
+  }
+  #dialog-overview,
+  #dialog-userSettings {
+    max-width: 560px;
+  }
 }

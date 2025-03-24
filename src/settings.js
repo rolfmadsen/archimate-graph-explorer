@@ -5,7 +5,7 @@ IMPORTANT: the file must be in the ArchiMate Model Exchange File Format:
     i.e. in Archi go to "\File\Export\Model to Open Exchange File..."
 */
 //export const modelPath = "data/ArchiSurance.xml";
-export const modelPath = "data/ArchiSurance.archimate";
+export const modelPath = "/data/ArchiSurance.archimate";
 
 /*
 Show or hide the header bar

@@ -3,6 +3,7 @@
 import * as nodeUtils from './graphNode.js';
 import * as linkUtils from './graphLink.js';
 import * as dataAccess from './dataAccess.js';
+import * as d3 from 'd3';
 
 /**
  * Helper: Returns the ID of an endpoint.
@@ -26,7 +27,7 @@ function runForceLayout(nodes, links, width, height) {
     .force("link", d3.forceLink(validLinks)
       .id(d => d.id)
       .distance(100)
-      .strength(0.5)
+      .strength(1.0)
     )
     .force("charge", d3.forceManyBody().strength(-300))
     .force("center", d3.forceCenter(width / 2, height / 2));

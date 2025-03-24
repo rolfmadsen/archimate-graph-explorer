@@ -1,3 +1,4 @@
+// GraphLink.js '
 
 const addArrowHeadsDefinitions = (svg) => {
 
@@ -103,10 +104,12 @@ const addLinks = (viewer, links) => {
         .data(links)
         .enter()
             .append("line")
-            .attr("id", (d) => { return d.id; }) 
-            .attr("class", (d) => { return "relationship-" + d.type.toLowerCase(); }) 
-            .attr("marker-start", (d) => { return linkMarkerStart(d); })
-            .attr("marker-end", (d) => { return linkMarkerEnd(d); });
+            .attr("id", d => d.id)
+            .attr("class", d => "relationship-" + d.type.toLowerCase())
+            .attr("marker-start", d => linkMarkerStart(d))
+            .attr("marker-end", d => linkMarkerEnd(d))
+            .attr("stroke", "#666")
+            .attr("stroke-width", 1);
       
     renderedLinks.append("title")
         .text((d) => { return d.name; });
