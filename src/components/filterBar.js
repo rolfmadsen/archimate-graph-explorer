@@ -1,55 +1,75 @@
-// filterBar.js
+/*  src/components/filterBar.js
+ *  — centralises all facet‑browser interactions —
+ */
 
-import { globalFilterGraph } from './dataAccess.js';
+import { setState } from "./filterState.js";
+import { globalFilterGraph } from "./dataAccess.js";
 
-export function setupFilters() {
-  const btn = document.getElementById("applyFiltersBtn");
-  if (btn) {
-    btn.addEventListener("click", () => {
-      globalFilterGraph((subgraph) => {
-        // Dispatch event so index.js can re-draw the graph
-        const evt = new Event("kuzuFiltersDone");
-        document.dispatchEvent(evt);
-      });
+/* ------------------------------------------------------------------ */
+/* helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+/** read the current DOM selections and return { layers, elementTypes, relationshipTypes } */
+function collectFacetState() {
+  /* -------- layers (header check‑boxes) --------------------------- */
+  const layerHeaders = [
+    { id: "group-business",      layer: "Business"     },
+    { id: "group-application",   layer: "Application"  },
+    { id: "group-techinterface", layer: "Technology"   }, // tech interface ⟶ Technology
+    { id: "group-physical",      layer: "Technology"   }  // physical      ⟶ Technology
+  ];
+  const layers = layerHeaders
+    .filter(h => document.getElementById(h.id)?.checked)
+    .map(h => h.layer);
+
+  /* fallback – if user deselects every layer keep all, to avoid empty graph */
+  if (!layers.length) layers.push("Business", "Application", "Technology");
+
+  /* -------- element types ---------------------------------------- */
+  const elementTypes = Array.from(
+    document.querySelectorAll(".facet-value:not([data-group='relationships']):checked")
+  ).map(cb => cb.value);
+
+  /* -------- relationship types ----------------------------------- */
+  const relationshipTypes = Array.from(
+    document.querySelectorAll(".facet-value[data-group='relationships']:checked")
+  ).map(cb => cb.value);
+
+  return { layers, elementTypes, relationshipTypes };
+}
+
+/* push current selections into shared state & (optionally) run global query */
+function pushFacetState(runGlobal = false) {
+  const facets = collectFacetState();
+  setState(facets);                       // ← notify subscribers
+  if (runGlobal) {
+    /* refresh session storage sub‑graph, then re‑draw happens in index.js */
+    globalFilterGraph(() => {
+      const evt = new Event("kuzuFiltersDone");
+      document.dispatchEvent(evt);
     });
   }
 }
 
-/**
- * Gather the user input from:
- *  - .layerCheckbox
- *  - #relTypesSelect
- *  - #depthInput
- *  - #rootNodeInput
- */
-export function selectedFilterValues() {
-  const layersChecked = Array.from(document.querySelectorAll(".layerCheckbox:checked"))
-    .map(cb => cb.value);
-  const layers = layersChecked.length ? layersChecked : ["Business", "Application", "Technology"];
+/* ------------------------------------------------------------------ */
+/* public API                                                         */
+/* ------------------------------------------------------------------ */
 
-  const relSelect = document.getElementById("relTypesSelect");
-  let relationshipTypes = [];
-  if (relSelect) {
-    relationshipTypes = Array.from(relSelect.selectedOptions).map(o => o.value);
-  }
-  // Change default to include all relationship types from the UI.
-  if (!relationshipTypes.length) {
-    relationshipTypes = [
-      "Composition",
-      "Aggregation",
-      "Realization",
-      "Serving",
-      "Assignment",
-      "Flow",
-      "Triggering",
-      "Access"
-    ];
-  }
+export function setupFilters() {
+  /* apply‑button */
+  document.getElementById("applyFiltersBtn")
+    ?.addEventListener("click", () => pushFacetState(true));
 
-  const depthInput = document.getElementById("depthInput");
-  const depthVal = parseInt(depthInput?.value || "2", 10);
+  /* any checkbox change triggers state update (no global query yet) */
+  document.addEventListener("change", e => {
+    if (e.target.matches(".facet-value") || e.target.id.startsWith("group-")) {
+      pushFacetState(false);
+    }
+  });
 
-  const rootNodeId = (document.getElementById("rootNodeInput")?.value || "").trim() || null;
-
-  return { rootNodeId, depth: depthVal, layers, relationshipTypes };
+  /* initial state */
+  pushFacetState(false);
 }
+
+/* NOTE:  `selectedFilterValues()` is no longer needed — all code should use
+          the reactive state from filterState.js via getState()/subscribe(). */

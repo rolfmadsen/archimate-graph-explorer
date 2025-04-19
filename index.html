@@ -5,7 +5,7 @@
     <title>ArchiMate Graph Explorer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.5, user-scalable=yes">
     <link rel="stylesheet" href="src/css/archigraph.css">
-    <link rel="icon" type="image/x-icon" href="/public/archimate_graph_explorer.ico" />
+    <link rel="icon" type="image/x-icon" href="/archimate_graph_explorer.ico" />
   <body>
     <!-- Header -->
     <header>
@@ -215,14 +215,18 @@
             <label><input type="checkbox" class="facet-value" data-group="other" value="Location" checked> Location</label>
           </div>
         </div>
-        <!-- Neighborhood Depth Slider -->
-        <!--
+        <!-- Neighborhood Depth Input -->
         <div id="bfsFilter-container" class="filter-container">
-          <label>Neighborhood Depth:</label>
-          <input type="range" id="depthSlider" min="1" max="10" value="1" />
-          <span id="depthSliderValue">1</span>
+          <label for="depthInput">Select element to neighborhood depth:</label>
+          <input
+            type="number"
+            id="depthInput"
+            min="1"
+            max="10"
+            value="2"
+            style="width:3em;"
+          />
         </div>
-        -->
         <br />
         <!-- Global Filter Button -->
         <button id="applyFiltersBtn">Apply Global Filters</button>

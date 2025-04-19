@@ -1,111 +1,98 @@
-// graphExplorer.js
+// src/components/graphExplorer.js
 
 import * as nodeUtils from './graphNode.js';
 import * as linkUtils from './graphLink.js';
 import * as dataAccess from './dataAccess.js';
 import * as d3 from 'd3';
+import { getState } from './filterState.js';
 
-/**
- * Helper: Returns the ID of an endpoint.
- */
+/** Helper to extract an endpoint’s ID */
 function getId(endpoint) {
   return typeof endpoint === 'object' && endpoint.id ? endpoint.id : endpoint;
 }
 
-/**
- * Runs a force–directed layout using D3’s forceSimulation.
- * Updates each node’s x and y properties.
- */
+/** Run a simple force simulation to set x,y on nodes */
 function runForceLayout(nodes, links, width, height) {
   const validLinks = links.filter(l => {
-    const srcId = getId(l.source);
-    const tgtId = getId(l.target);
-    return nodes.find(n => n.id === srcId) && nodes.find(n => n.id === tgtId);
+    const s = getId(l.source), t = getId(l.target);
+    return nodes.some(n => n.id === s) && nodes.some(n => n.id === t);
   });
 
-  const simulation = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(validLinks)
-      .id(d => d.id)
-      .distance(100)
-      .strength(1.0)
-    )
+  d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(validLinks).id(d => d.id).distance(100).strength(1.0))
     .force("charge", d3.forceManyBody().strength(-300))
-    .force("center", d3.forceCenter(width / 2, height / 2));
-
-  simulation.tick(300);
-  simulation.stop();
+    .force("center", d3.forceCenter(width/2, height/2))
+    .stop()
+    .tick(300);
 }
 
-/**
- * Draws the graph in the given container element.
- * On double‑clicking a node, it queries KùzuDB for its neighborhood
- * (using the slider for depth) and re‑renders the graph.
- *
- * The key update is using linkUtils.addLinks to render edges with proper markers.
- */
+/** Draw or re‑draw the graph */
 function drawGraph(nodes, pinnedNodeId, links, containerElement, callback) {
-  // Remove any existing SVG.
+  // clear any existing SVG
   d3.selectAll("#graph-viewer").remove();
 
-  const width = containerElement.clientWidth;
+  const width  = containerElement.clientWidth;
   const height = containerElement.clientHeight;
 
   const svg = d3.select(containerElement)
     .append("svg")
-    .attr("id", "graph-viewer")
-    .attr("width", width)
-    .attr("height", height);
+      .attr("id", "graph-viewer")
+      .attr("width",  width)
+      .attr("height", height);
 
   runForceLayout(nodes, links, width, height);
 
-  // Add arrowhead definitions for relationship markers.
-  if (typeof linkUtils.addArrowHeadsDefinitions === 'function') {
-    linkUtils.addArrowHeadsDefinitions(svg);
-  }
+  // arrowheads if provided
+  if (linkUtils.addArrowHeadsDefinitions) linkUtils.addArrowHeadsDefinitions(svg);
 
   const viewer = svg.append("g").attr("id", "viewer");
 
-  // Filter out any links whose endpoints are missing.
+  // draw links
   const validLinks = links.filter(l =>
-    nodes.find(n => n.id === getId(l.source)) &&
-    nodes.find(n => n.id === getId(l.target))
+    nodes.some(n => n.id === getId(l.source)) &&
+    nodes.some(n => n.id === getId(l.target))
   );
+  const renderedLinks = linkUtils.addLinks(viewer, validLinks)
+    .attr("stroke-opacity", 0.6);
 
-  // Instead of manually creating lines, use linkUtils.addLinks to add relationships
-  // with markers based on their type.
-  const renderedLinks = linkUtils.addLinks(viewer, validLinks);
+  // helper for node coordinates
+  const coord = (idOrObj, axis) => {
+    const id = getId(idOrObj);
+    const n = nodes.find(x => x.id === id);
+    return n ? n[axis] : 0;
+  };
 
-  // Helper to get the node coordinate along the specified axis.
-  function getNodeCoord(idOrObj, nodes, axis = 'x') {
-    const id = typeof idOrObj === 'object' && idOrObj.id ? idOrObj.id : idOrObj;
-    const node = nodes.find(n => n.id === id);
-    return node ? (axis === 'x' ? node.x : node.y) : 0;
-  }
-
-  // Update link positions using the force layout coordinates.
   renderedLinks
-    .attr("x1", d => getNodeCoord(d.source, nodes, 'x'))
-    .attr("y1", d => getNodeCoord(d.source, nodes, 'y'))
-    .attr("x2", d => getNodeCoord(d.target, nodes, 'x'))
-    .attr("y2", d => getNodeCoord(d.target, nodes, 'y'));
+    .attr("x1", d => coord(d.source, 'x'))
+    .attr("y1", d => coord(d.source, 'y'))
+    .attr("x2", d => coord(d.target, 'x'))
+    .attr("y2", d => coord(d.target, 'y'));
 
-  // Render nodes using the node utility.
+  // draw nodes
   const renderedNodes = nodeUtils.addNodes(width, height, viewer, nodes, pinnedNodeId)
-    .attr("transform", d => `translate(${d.x}, ${d.y})`);
+    .attr("transform", d => `translate(${d.x},${d.y})`);
 
-  // On double-click a node, query its neighborhood and re-render the graph.
+  // highlight pinned node
+  renderedNodes.classed("pinned-node", d => d.id === pinnedNodeId)
+    .select("text")
+      .classed("pinned-node", d => d.id === pinnedNodeId);
+
+  // double‑click → neighborhood
   renderedNodes.on("dblclick", function(event, d) {
     event.stopPropagation();
-    const depth = parseInt(document.getElementById("depthSlider").value, 10);
+    const depth      = +(document.getElementById("depthInput").value) || 1;
+    const facetState = getState();
     document.getElementById("loading-message").style.display = "block";
-    dataAccess.kuzuNeighborhoodGraph(d.id, depth, (subgraph) => {
-      document.getElementById("loading-message").style.display = "none";
-      // Re-draw the graph with the new subgraph.
-      drawGraph(subgraph.nodes, null, subgraph.links, containerElement);
-    });
-  });  
+    dataAccess.kuzuNeighborhoodGraph(
+      d.id, depth, facetState,
+      subgraph => {
+        document.getElementById("loading-message").style.display = "none";
+        drawGraph(subgraph.nodes, d.id, subgraph.links, containerElement);
+      }
+    );
+  });
 
-  // Enable dragging on nodes.
+  // -- Fixed drag handler: use `this`, not event.subject --
   const dragHandler = d3.drag()
     .on("start", function(event, d) {
       d3.select(this).classed("dragging-node", true);
@@ -113,59 +100,49 @@ function drawGraph(nodes, pinnedNodeId, links, containerElement, callback) {
     .on("drag", function(event, d) {
       d.x = event.x;
       d.y = event.y;
-      d3.select(this).attr("transform", `translate(${d.x}, ${d.y})`);
+      d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
       renderedLinks
-        .filter(link => getId(link.source) === d.id || getId(link.target) === d.id)
-        .attr("x1", link => getNodeCoord(getId(link.source), nodes, 'x'))
-        .attr("y1", link => getNodeCoord(getId(link.source), nodes, 'y'))
-        .attr("x2", link => getNodeCoord(getId(link.target), nodes, 'x'))
-        .attr("y2", link => getNodeCoord(getId(link.target), nodes, 'y'));
+        .filter(l => getId(l.source) === d.id || getId(l.target) === d.id)
+        .attr("x1", l => coord(l.source, 'x'))
+        .attr("y1", l => coord(l.source, 'y'))
+        .attr("x2", l => coord(l.target, 'x'))
+        .attr("y2", l => coord(l.target, 'y'));
     })
     .on("end", function(event, d) {
       d3.select(this).classed("dragging-node", false);
     });
   renderedNodes.call(dragHandler);
 
-  // Enable zoom and pan.
-  const zoomHandler = d3.zoom()
-    .on("zoom", event => {
-      viewer.attr("transform", event.transform);
-    });
-  svg.call(zoomHandler).on("dblclick.zoom", null);
+  // zoom & pan
+  svg.call(d3.zoom().on("zoom", ev => viewer.attr("transform", ev.transform)))
+     .on("dblclick.zoom", null);
 
-  // Background rectangle to clear highlights on click.
+  // clear pin when clicking background
   svg.insert("rect", ":first-child")
-    .attr("id", "canvas-bg")
     .attr("width", width)
     .attr("height", height)
     .attr("fill", "transparent")
     .on("click", () => {
-      renderedNodes.selectAll("*").classed("highlighted", false)
-        .classed("neighbor-highlight", false);
-      renderedLinks.classed("link-highlight", false);
+      renderedNodes.classed("pinned-node", false)
+                   .select("text").classed("pinned-node", false);
     });
 
-  centerGraphViewBox(nodes, svg);
-  if (typeof callback === "function") callback();
-}
-
-/**
- * Centers the graph by computing a bounding box for nodes and setting the SVG's viewBox.
- */
-function centerGraphViewBox(nodes, svg) {
+  // center viewBox
   if (!nodes.length) {
-    svg.attr("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
-    return;
+    svg.attr("viewBox", `0 0 ${width} ${height}`);
+  } else {
+    let minX=1e9, minY=1e9, maxX=-1e9, maxY=-1e9;
+    nodes.forEach(n => {
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x);
+      maxY = Math.max(maxY, n.y);
+    });
+    const pad = 20;
+    svg.attr("viewBox", `${minX-pad} ${minY-pad} ${maxX-minX+2*pad} ${maxY-minY+2*pad}`);
   }
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  nodes.forEach(d => {
-    if (d.x < minX) minX = d.x;
-    if (d.y < minY) minY = d.y;
-    if (d.x > maxX) maxX = d.x;
-    if (d.y > maxY) maxY = d.y;
-  });
-  const padding = 20;
-  svg.attr("viewBox", `${minX - padding} ${minY - padding} ${maxX - minX + 2 * padding} ${maxY - minY + 2 * padding}`);
+
+  if (callback) callback();
 }
 
 export { drawGraph };

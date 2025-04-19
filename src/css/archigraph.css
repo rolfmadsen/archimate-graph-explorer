@@ -161,6 +161,18 @@ dialog::backdrop {
   margin: 1em 0.6em 0 0.2em;
 }
 
+/* Highlight circle, icon and text for pinned-node */
+#nodes g.pinned-node > circle,
+#nodes g.pinned-node > path.node-icon {
+  stroke: red !important;
+  stroke-width: 1px !important;
+}
+
+#nodes g.pinned-node > text {
+  fill: red !important;
+  font-weight: bold !important;
+}
+
 /* Drag/drop zone for user model load */
 #userModelLoad-dragDrop-zone {
   width: 16em;

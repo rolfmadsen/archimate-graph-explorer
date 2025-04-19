@@ -1,26 +1,32 @@
-// dataAccess.js
+//  src/components/dataAccess.js
+//  — Kùzu‑DB initialisation + data / query helpers —
 
-import kuzu from 'kuzu-wasm';
-import { convertXmlToJson as convertArchiXmlToJson } from './dataParserArchiFormat.js';
-import { convertXmlToJson as convertExchangeXmlToJson } from './dataParserExchangeFormat.js';
+import kuzu from "kuzu-wasm";
+import { convertXmlToJson as convertArchiXmlToJson } from "./dataParserArchiFormat.js";
+import { convertXmlToJson as convertExchangeXmlToJson } from "./dataParserExchangeFormat.js";
+import { getState } from "./filterState.js";           // ← NEW
 
 const graphDataStoreKey = "archiGraphDataStore";
 
-let db = null;
+let db   = null;
 let conn = null;
+
+/* ------------------------------------------------------------------ */
+/* init in‑memory DB and schema                                       */
+/* ------------------------------------------------------------------ */
 
 export const kuzuReadyPromise = (async () => {
   await kuzu.init();
-  db = new kuzu.Database(); // in-memory
+  db   = new kuzu.Database();           // in‑memory
   conn = new kuzu.Connection(db);
-  console.log("Kùzu in-memory DB created successfully.");
+  console.log("Kùzu in‑memory DB created successfully.");
 
   await conn.query(`
     CREATE NODE TABLE IF NOT EXISTS Element(
-      id STRING PRIMARY KEY,
+      id    STRING PRIMARY KEY,
       layer STRING,
-      type STRING,
-      name STRING
+      type  STRING,
+      name  STRING
     );
   `);
   await conn.query(`
@@ -33,85 +39,103 @@ export const kuzuReadyPromise = (async () => {
   return conn;
 })();
 
+/* ------------------------------------------------------------------ */
+/* helpers                                                            */
+/* ------------------------------------------------------------------ */
+
 function detectAndConvertXmlToJson(xml) {
-  if (xml.querySelector('folder[type="elements"]') || xml.querySelector('folder[type="relations"]')) {
-    console.log("Detected Archi .archimate file -> Archi parser.");
+  if (
+    xml.querySelector('folder[type="elements"]') ||
+    xml.querySelector('folder[type="relations"]')
+  ) {
+    console.log("Detected Archi .archimate file → Archi parser.");
     return convertArchiXmlToJson(xml);
   }
-  const hasElements = xml.querySelector("model > elements");
-  const hasRelationships = xml.querySelector("model > relationships");
+  const hasElements       = xml.querySelector("model > elements");
+  const hasRelationships  = xml.querySelector("model > relationships");
   if (hasElements && hasRelationships) {
-    console.log("Detected ArchiMate Exchange Format -> Exchange parser.");
+    console.log("Detected ArchiMate Exchange Format → Exchange parser.");
     return convertExchangeXmlToJson(xml);
   }
   throw new Error("Could not detect Archi/Exchange file format from XML.");
 }
 
+function toCypherList(arr) {
+  if (!arr?.length) return "[]";
+  return `[${arr.map(v => `'${v}'`).join(",")}]`;
+}
+
+/* ------------------------------------------------------------------ */
+/* model file load  ➜  populate DB                                    */
+/* ------------------------------------------------------------------ */
+
 export async function processModelFile(fileContent, callback) {
   try {
     const conn = await kuzuReadyPromise;
     if (!conn) throw new Error("Kùzu connection not established.");
-    const xml = new DOMParser().parseFromString(fileContent, "text/xml");
+
+    const xml           = new DOMParser().parseFromString(fileContent, "text/xml");
     const graphDataJson = detectAndConvertXmlToJson(xml);
     if (!graphDataJson.nodes?.length) {
       throw new Error("Parsed data is empty or missing relationships.");
     }
+
     sessionStorage.setItem(graphDataStoreKey, JSON.stringify(graphDataJson));
 
-    console.log("Clearing old data from Kùzu...");
+    /* wipe old tables */
     await conn.query("MATCH (n:Element) DELETE n;");
     await conn.query("MATCH ()-[r:Relationship]->() DELETE r;");
 
-    console.log("Inserting new data into Kùzu...");
+    /* insert nodes */
     for (const n of graphDataJson.nodes) {
-      const safeId   = (n.id || "").replace(/'/g, "\\'");
+      const safeId   = (n.id   || "").replace(/'/g, "\\'");
       const safeType = (n.type || "").replace(/'/g, "\\'");
       const safeName = (n.name || "").replace(/'/g, "\\'");
-      let guessLayer = "Business";
-      if (n.layer && n.layer.trim().length > 0) {
-        guessLayer = n.layer;
+
+      let layerGuess = "Business";
+      if (n.layer?.trim()) {
+        layerGuess = n.layer;
       } else if (n.type) {
-        const lowerType = n.type.toLowerCase();
-        if (lowerType.includes("business")) guessLayer = "Business";
-        else if (lowerType.includes("application")) guessLayer = "Application";
-        else if (lowerType.includes("technology")) guessLayer = "Technology";
+        const l = n.type.toLowerCase();
+        if (l.includes("application")) layerGuess = "Application";
+        else if (l.includes("technology")) layerGuess = "Technology";
       }
-      const createNode = `
-        CREATE (:Element {
-          id: '${safeId}',
-          layer: '${guessLayer}',
-          type: '${safeType}',
-          name: '${safeName}'
-        });
-      `;
-      await conn.query(createNode);
+
+      await conn.query(`
+        CREATE (:Element { id: '${safeId}', layer: '${layerGuess}', type: '${safeType}', name: '${safeName}' });
+      `);
     }
+
+    /* insert relationships */
     for (const rel of graphDataJson.links) {
-      const safeType = ((rel.type && rel.type.trim()) ? rel.type : "Unknown").replace(/'/g, "\\'");
-      const src      = (rel.source || "").replace(/'/g, "\\'");
-      const tgt      = (rel.target || "").replace(/'/g, "\\'");
+      const src = (rel.source || "").replace(/'/g, "\\'");
+      const tgt = (rel.target || "").replace(/'/g, "\\'");
       if (!src || !tgt) continue;
-      const createRel = `
+
+      const safeType = (rel.type?.trim() || "Unknown").replace(/'/g, "\\'");
+
+      await conn.query(`
         MATCH (a:Element {id: '${src}'}), (b:Element {id: '${tgt}'})
         CREATE (a)-[:Relationship {type: '${safeType}'}]->(b);
-      `;
-      await conn.query(createRel);
+      `);
     }
+
     console.log("Data inserted into Kùzu successfully.");
-    if (typeof callback === 'function') callback();
-  } catch (error) {
-    console.error("Error processing model file & inserting into Kùzu:", error);
-    throw error;
+    if (typeof callback === "function") callback();
+  } catch (err) {
+    console.error("Error processing model file & inserting into Kùzu:", err);
+    throw err;
   }
 }
 
-export async function requestDataFromServer(modelPath, callback) {
+/* simple wrappers -------------------------------------------------- */
+
+export async function requestDataFromServer(modelPath, cb) {
   try {
     await kuzuReadyPromise;
     const resp = await fetch(modelPath);
     if (!resp.ok) throw new Error(resp.statusText);
-    const fileContent = await resp.text();
-    await processModelFile(fileContent, callback);
+    await processModelFile(await resp.text(), cb);
   } catch (err) {
     console.error("Error retrieving model file:", err);
   }
@@ -121,81 +145,115 @@ export function dataExistsInStore() {
   return !!sessionStorage.getItem(graphDataStoreKey);
 }
 export function requestDataFromStore() {
-  const data = sessionStorage.getItem(graphDataStoreKey);
-  return data ? JSON.parse(data) : { nodes: [], links: [] };
+  const d = sessionStorage.getItem(graphDataStoreKey);
+  return d ? JSON.parse(d) : { nodes: [], links: [] };
 }
 export function deleteDataFromStore() {
   sessionStorage.removeItem(graphDataStoreKey);
 }
 export function modelOverview() {
   const g = requestDataFromStore();
-  return {
-    modelName: g.modelName || "No Model Name",
-    modelDocumentation: g.modelDocumentation || ""
-  };
+  return { modelName: g.modelName || "No Model Name", modelDocumentation: g.modelDocumentation || "" };
 }
 
-// Helper: Converts an array to a Cypher list string.
-function toCypherList(arr) {
-  if (!arr?.length) return "[]";
-  const escaped = arr.map(v => `'${v}'`).join(",");
-  return `[${escaped}]`;
-}
+/* ------------------------------------------------------------------ */
+/* neighbourhood query  (facet‑aware)                                 */
+/* ------------------------------------------------------------------ */
 
-// Neighborhood query: returns the subgraph around a clicked node.
-export async function kuzuNeighborhoodGraph(rootNodeId, depth, callback) {
+/**
+ * rootNodeId :  element ID that was double‑clicked
+ * depth      :  hop distance (1 → direct neighbours)
+ * facetState :  { layers, relationshipTypes }, from filterState.js (optional; defaults=live state)
+ */
+export async function kuzuNeighborhoodGraph(
+  rootNodeId,
+  depth       = 1,
+  facetState  = getState(),
+  callback
+) {
   try {
     const conn = await kuzuReadyPromise;
     if (!conn) throw new Error("Kùzu DB not ready.");
-    
-    // Here we ignore depth (or you could use it to change the MATCH pattern) and simply return one-hop neighbors.
+
+    const safeId = (rootNodeId || "").replace(/'/g, "\\'");
+
+    /* build query (no facet filtering here – we’ll filter client‑side) */
     const query = `
-      MATCH (n:Element {id: $rootNodeId})
-      MATCH (n)-[r:Relationship]-(m:Element)
-      RETURN collect(n) + collect(m) AS nodes, collect(r) AS links;
+      MATCH p = (:Element {id: '${safeId}'})-[:Relationship*1..${depth}]-(:Element)
+      RETURN collect(p) AS paths;
     `;
-    console.log("Neighborhood Query:", query);
+    console.log("Select Node Neighborhood:", query);
+    const result = await conn.query(query);
+
+    if (!result?.getAllObjects) {
+      console.error("Neighborhood query returned invalid result:", result);
+      const empty = { nodes: [], links: [] };
+      if (typeof callback === "function") callback(empty);
+      return empty;
+    }
+
+    const rows     = await result.getAllObjects();
+    const pathList = rows.length ? rows[0].paths || [] : [];
+
+    /* raw sub‑graph */
+    const subgraph = buildSubgraphFromPaths(pathList);
+
+    /* facet filtering (client side), now including element‑type */
+    const {
+      layers = [],
+      relationshipTypes: relTypes = [],
+      elementTypes = []
+    } = facetState;
+
+    // first prune links by relationship type
+    const prunedLinks = subgraph.links.filter(
+      l => !relTypes.length || relTypes.includes(l.type)
+    );
+
+    // then prune nodes by layer AND element type, and ensure they're connected
+    const prunedNodes = subgraph.nodes.filter(n =>
+      (!layers.length    || layers.includes(n.layer)) &&
+      (!elementTypes.length || elementTypes.includes(n.type)) &&
+      prunedLinks.some(link => link.source === n.id || link.target === n.id)
+    );
+
+    const filtered = { nodes: prunedNodes, links: prunedLinks };
     
-    // Execute the query with the parameter.
-    const result = await conn.query(query, { rootNodeId });
-    const rows = await result.getAllObjects();
-    const subgraph = rows[0] || { nodes: [], links: [] };
-    
-    if (typeof callback === "function") callback(subgraph);
-  } catch (error) {
-    console.error("Error in neighborhood query:", error);
-    alert("Error in neighborhood query: " + error.message);
+    if (typeof callback === "function") callback(filtered);
+    return filtered;
+  } catch (err) {
+    console.error("Error in neighborhood query:", err);
+    alert("Error in neighborhood query: " + err.message);
+    return { nodes: [], links: [] };
   }
 }
 
-/**
- * Build subgraph from path results.
- * Each row is expected to return a path p with properties _NODES and _RELS.
- */
-export async function buildSubgraphFromPaths(queryResult) {
-  const rows = queryResult.getAllObjects ? await queryResult.getAllObjects() : queryResult;
-  const nodesMap = new Map();
-  const links = [];
+/* ------------------------------------------------------------------ */
+/* utilities                                                          */
+/* ------------------------------------------------------------------ */
 
-  for (const row of rows) {
-    let p = typeof row.getValue === "function" ? row.getValue(0) : row;
-    if (p && p._NODES && p._RELS) {
-      p._NODES.forEach(node => nodesMap.set(node.id, node));
-      for (let i = 0; i < p._RELS.length; i++) {
-        const srcNode = p._NODES[i];
-        const tgtNode = p._NODES[i + 1];
-        if (srcNode && tgtNode) {
-          links.push({
-            source: srcNode.id,
-            target: tgtNode.id,
-            type: p._RELS[i].type
-          });
-        }
+export function buildSubgraphFromPaths(paths = []) {
+  const nodesMap = new Map();
+  const links    = [];
+
+  paths.forEach(p => {
+    const nodeArr = p._nodes ?? p._NODES ?? [];
+    const relArr  = p._rels  ?? p._RELS  ?? [];
+
+    nodeArr.forEach(n => {
+      if (n?.id != null) nodesMap.set(n.id, n);
+    });
+
+    for (let i = 0; i < relArr.length; i++) {
+      const src = nodeArr[i];
+      const tgt = nodeArr[i + 1];
+      const r   = relArr[i];
+      if (src && tgt && r) {
+        links.push({ source: src.id, target: tgt.id, type: r.type || "Relationship" });
       }
-    } else {
-      console.warn("Row does not contain a valid path object:", row);
     }
-  }
+  });
+
   return { nodes: Array.from(nodesMap.values()), links };
 }
 
