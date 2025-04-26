@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.5, user-scalable=yes">
     <link rel="stylesheet" href="src/css/archigraph.css">
     <link rel="icon" type="image/x-icon" href="/archimate_graph_explorer.ico" />
+    <link rel="icon" type="image/x-icon" href="/archimate_graph_explorer.ico" />
+    <style>
+      /* keyboard‐highlighted item in the autocomplete list */
+      .autocomplete-list .search-item.highlighted {
+        background-color: #eee;
+      }
+    </style>
+    
   <body>
     <!-- Header -->
     <header>
@@ -235,6 +243,30 @@
         </div>
       </div>
 
+      <!-- Element selector + fuzzy search -->
+      <div id="element-selector" class="filter-container" style="margin-bottom:1em;">
+        <input
+          type="text"
+          id="element-search"
+          placeholder="Search element…"
+          style="width:100%; padding:0.3em;"
+        />
+        <div
+          id="element-search-results"
+          class="autocomplete-list"
+          style="border:1px solid #ccc; max-height:6em; overflow-y:auto;"
+        ></div>
+        <div
+          id="element-selected"
+          style="display:none; margin-top:0.5em; font-size:0.9em;"
+        >
+          Selected:
+          <strong id="selected-name"></strong>
+          (<span id="selected-type"></span>)
+          <button id="clear-selection" type="button" style="margin-left:0.5em;">×</button>
+        </div>
+      </div>
+      
       <!-- Neighborhood Depth + Apply Button -->
       <div id="bfsFilter-container" class="filter-container">
         <label for="depthInput">Select element to neighborhood depth:</label>

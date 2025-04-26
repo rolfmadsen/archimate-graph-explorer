@@ -120,20 +120,13 @@ function drawGraph(nodes, pinnedNodeId, links, containerElement, callback) {
     .select("text")
       .classed("pinned-node", d => d.id === pinnedNodeId);
 
-  // double‑click → neighborhood
+  // double-click → select element for later “Apply”
   renderedNodes.on("dblclick", function(event, d) {
     event.stopPropagation();
-    const depth      = +(document.getElementById("depthInput").value) || 1;
-    const facetState = getState();
-    document.getElementById("loading-message").style.display = "block";
-    dataAccess.kuzuNeighborhoodGraph(
-      d.id, depth, facetState,
-      subgraph => {
-        document.getElementById("loading-message").style.display = "none";
-        drawGraph(subgraph.nodes, d.id, subgraph.links, containerElement);
-      }
+    document.dispatchEvent(
+      new CustomEvent("elementSelected", { detail: d })
     );
-  });
+  });  
 
   // -- Fixed drag handler: use `this`, not event.subject --
   const dragHandler = d3.drag()
