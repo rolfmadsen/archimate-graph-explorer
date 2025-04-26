@@ -30,7 +30,19 @@ function reDrawFromSession() {
 }
 
 function modelLoaded() {
-  reDrawFromSession();
+  // show loading spinner
+  document.getElementById("loading-message").style.display = "block";
+
+  // run the exact same Kùzu filter you use on “Apply Global Filters”
+  dataAccess.globalFilterGraph(subgraph => {
+    document.getElementById("loading-message").style.display = "none";
+    graphExplorer.drawGraph(
+      subgraph.nodes,
+      null,                       // no pinned node on initial load
+      subgraph.links,
+      document.getElementById("graph-container")
+    );
+  });
 }
 
 function setupFeatures() {

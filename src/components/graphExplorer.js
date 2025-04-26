@@ -6,24 +6,67 @@ import * as dataAccess from './dataAccess.js';
 import * as d3 from 'd3';
 import { getState } from './filterState.js';
 
-/** Helper to extract an endpoint’s ID */
 function getId(endpoint) {
   return typeof endpoint === 'object' && endpoint.id ? endpoint.id : endpoint;
 }
 
-/** Run a simple force simulation to set x,y on nodes */
 function runForceLayout(nodes, links, width, height) {
+  if (!nodes.length) return;
+
+  // 1) prune any links whose source/target is missing
+  const idSet = new Set(nodes.map(n => n.id));
   const validLinks = links.filter(l => {
-    const s = getId(l.source), t = getId(l.target);
-    return nodes.some(n => n.id === s) && nodes.some(n => n.id === t);
+    const s = typeof l.source === "object" ? l.source.id : l.source;
+    const t = typeof l.target === "object" ? l.target.id : l.target;
+    return idSet.has(s) && idSet.has(t);
   });
 
-  d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(validLinks).id(d => d.id).distance(100).strength(1.0))
-    .force("charge", d3.forceManyBody().strength(-300))
-    .force("center", d3.forceCenter(width/2, height/2))
-    .stop()
-    .tick(300);
+  // 2) collect distinct, truthy layers
+  const layers = Array.from(new Set(nodes.map(d => d.layer).filter(Boolean)));
+
+  // 3) fallback to plain force if ≤1 cluster
+  if (layers.length <= 1) {
+    const sim = d3.forceSimulation(nodes)
+      .force("link",    d3.forceLink(validLinks).id(d=>d.id).distance(80).strength(0.2))
+      .force("charge",  d3.forceManyBody().strength(-100))
+      .force("collide", d3.forceCollide(25))
+      .force("center",  d3.forceCenter(width/2, height/2));
+    sim.stop();
+    for (let i = 0; i < 300; ++i) sim.tick();
+    return;
+  }
+
+  // 4) compute circular centroids around the canvas center
+  const cx = width  * 0.5;
+  const cy = height * 0.5;
+  const R  = Math.min(width, height) * 0.35;
+  const clusterMap = new Map();
+  layers.forEach((layer, i) => {
+    const θ = (2 * Math.PI * i) / layers.length;
+    clusterMap.set(layer, {
+      x: cx + Math.cos(θ) * R,
+      y: cy + Math.sin(θ) * R
+    });
+  });
+
+  // 5) run the clustered simulation
+  const sim = d3.forceSimulation(nodes)
+    .force("link",    d3.forceLink(validLinks).id(d=>d.id).distance(70).strength(0.08))
+    .force("charge",  d3.forceManyBody().strength(-300))
+    .force("collide", d3.forceCollide(30))
+    .force("center",  d3.forceCenter(cx, cy))
+    // pull each node into its layer’s circle wedge
+    .force("clusterX", d3.forceX(d => {
+      const c = clusterMap.get(d.layer);
+      return c ? c.x : cx;
+    }).strength(0.8))
+    .force("clusterY", d3.forceY(d => {
+      const c = clusterMap.get(d.layer);
+      return c ? c.y : cy;
+    }).strength(0.8));
+
+  sim.stop();
+  for (let i = 0; i < 300; ++i) sim.tick();
 }
 
 /** Draw or re‑draw the graph */

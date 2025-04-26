@@ -49,188 +49,200 @@
     <!-- Main container: Facet sidebar and Graph display -->
     <div id="main-container">
       <!-- Facet Filter Sidebar -->
-      <div id="facet-sidebar">
+      <!-- index.html -->
+    <div id="facet-sidebar">
 
-        <!-- Facet Groups -->
-        <!-- Relationship Types -->
-        <div class="facet-group" id="facet-relationships">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-relationships" checked>
-            Relationship Types
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Access" checked> Access</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Aggregation" checked> Aggregation</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Assignment" checked> Assignment</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Association" checked> Association</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Composition" checked> Composition</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Flow" checked> Flow</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Influence" checked> Influence</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Realization" checked> Realization</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Serving" checked> Serving</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Specialization" checked> Specialization</label>
-            <label><input type="checkbox" class="facet-value" data-group="relationships" value="Triggering" checked> Triggering</label>
-          </div>
+      <!-- Strategy Facet Group -->
+      <div class="facet-group" id="facet-strategy">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-strategy" value = "Strategy" checked>
+          Strategy
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="strategy" value="Capability" checked> Capability</label>
+          <label><input type="checkbox" class="facet-value" data-group="strategy" value="CourseOfAction" checked> CourseOfAction</label>
+          <label><input type="checkbox" class="facet-value" data-group="strategy" value="Resource" checked> Resource</label>
+          <label><input type="checkbox" class="facet-value" data-group="strategy" value="ValueStream" checked> ValueStream</label>
         </div>
-        <!-- Strategy Facet Group -->
-        <div class="facet-group" id="facet-strategy">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-strategy" checked>
-            Strategy
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="strategy" value="Capability" checked> Capability</label>
-            <label><input type="checkbox" class="facet-value" data-group="strategy" value="CourseOfAction" checked> CourseOfAction</label>
-            <label><input type="checkbox" class="facet-value" data-group="strategy" value="Resource" checked> Resource</label>
-            <label><input type="checkbox" class="facet-value" data-group="strategy" value="ValueStream" checked> ValueStream</label>
-          </div>
-        </div>
-        <!-- Business Facet Group -->
-        <div class="facet-group" id="facet-business">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-business" checked>
-            Business
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessActor" checked> BusinessActor</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessCollaboration" checked> BusinessCollaboration</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessEvent" checked> BusinessEvent</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessFunction" checked> BusinessFunction</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessInteraction" checked> BusinessInteraction</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessInterface" checked> BusinessInterface</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessObject" checked> BusinessObject</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessProcess" checked> BusinessProcess</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessRole" checked> BusinessRole</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessService" checked> BusinessService</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="Contract" checked> Contract</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="Product" checked> Product</label>
-            <label><input type="checkbox" class="facet-value" data-group="business" value="Representation" checked> Representation</label>
-          </div>
-        </div>
-        <!-- Application Facet Group -->
-        <div class="facet-group" id="facet-application">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-application" checked>
-            Application
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationComponent" checked> ApplicationComponent</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationCollaboration" checked> ApplicationCollaboration</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationEvent" checked> ApplicationEvent</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationFunction" checked> ApplicationFunction</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationInteraction" checked> ApplicationInteraction</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationInterface" checked> ApplicationInterface</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationProcess" checked> ApplicationProcess</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationService" checked> ApplicationService</label>
-            <label><input type="checkbox" class="facet-value" data-group="application" value="DataObject" checked> DataObject</label>
-          </div>
-        </div>
-        <!-- TechnologyInterface Facet Group -->
-        <div class="facet-group" id="facet-techinterface">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-techinterface" checked>
-            TechnologyInterface
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="Artifact" checked> Artifact</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="CommunicationNetwork" checked> CommunicationNetwork</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="Device" checked> Device</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="Node" checked> Node</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="Path" checked> Path</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="SystemSoftware" checked> SystemSoftware</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyCollaboration" checked> TechnologyCollaboration</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyEvent" checked> TechnologyEvent</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyFunction" checked> TechnologyFunction</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyInteraction" checked> TechnologyInteraction</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyInterface" checked> TechnologyInterface</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyProcess" checked> TechnologyProcess</label>
-            <label><input type="checkbox" class="facet-value" data-group="techinterface" value="TechnologyService" checked> TechnologyService</label>
-          </div>
-        </div>
-        <!-- Physical Facet Group -->
-        <div class="facet-group" id="facet-physical">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-physical" checked>
-            Physical
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="physical" value="Distribution Network" checked> Distribution Network</label>
-            <label><input type="checkbox" class="facet-value" data-group="physical" value="Equipment" checked> Equipment</label>
-            <label><input type="checkbox" class="facet-value" data-group="physical" value="Facility" checked> Facility</label>
-            <label><input type="checkbox" class="facet-value" data-group="physical" value="Material" checked> Material</label>
-          </div>
-        </div>
-        <!-- Implementation & Migration Facet Group -->
-        <div class="facet-group" id="facet-impl">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-impl" checked>
-            Implementation &amp; Migration
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="impl" value="Deliverable" checked> Deliverable</label>
-            <label><input type="checkbox" class="facet-value" data-group="impl" value="Gap" checked> Gap</label>
-            <label><input type="checkbox" class="facet-value" data-group="impl" value="ImplementationEvent" checked> ImplementationEvent</label>
-            <label><input type="checkbox" class="facet-value" data-group="impl" value="Plateau" checked> Plateau</label>
-            <label><input type="checkbox" class="facet-value" data-group="impl" value="WorkPackage" checked> WorkPackage</label>
-          </div>
-        </div>
-        <!-- Motivation Facet Group -->
-        <div class="facet-group" id="facet-motivation">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-motivation" checked>
-            Motivation
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Assessment" checked> Assessment</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Constraint" checked> Constraint</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Driver" checked> Driver</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Goal" checked> Goal</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Meaning" checked> Meaning</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Outcome" checked> Outcome</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Principle" checked> Principle</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Requirement" checked> Requirement</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Stakeholder" checked> Stakeholder</label>
-            <label><input type="checkbox" class="facet-value" data-group="motivation" value="Value" checked> Value</label>
-          </div>
-        </div>
-        <!-- Other Facet Group -->
-        <div class="facet-group" id="facet-other">
-          <h4>
-            <span class="dropdown-icon">▶</span>
-            <input type="checkbox" id="group-other" checked>
-            Other
-          </h4>
-          <div class="facet-values">
-            <label><input type="checkbox" class="facet-value" data-group="other" value="Grouping" checked> Grouping</label>
-            <label><input type="checkbox" class="facet-value" data-group="other" value="AndJunction" checked> AndJunction</label>
-            <label><input type="checkbox" class="facet-value" data-group="other" value="OrJunction" checked> OrJunction</label>
-            <label><input type="checkbox" class="facet-value" data-group="other" value="Location" checked> Location</label>
-          </div>
-        </div>
-        <!-- Neighborhood Depth Input -->
-        <div id="bfsFilter-container" class="filter-container">
-          <label for="depthInput">Select element to neighborhood depth:</label>
-          <input
-            type="number"
-            id="depthInput"
-            min="1"
-            max="10"
-            value="2"
-            style="width:3em;"
-          />
-        </div>
-        <br />
-        <!-- Global Filter Button -->
-        <button id="applyFiltersBtn">Apply Global Filters</button>
       </div>
+
+      <!-- Business Facet Group -->
+      <div class="facet-group" id="facet-business">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-business" value = "Business" checked>
+          Business
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessActor" checked> BusinessActor</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessCollaboration" checked> BusinessCollaboration</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessEvent" checked> BusinessEvent</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessFunction" checked> BusinessFunction</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessInteraction" checked> BusinessInteraction</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessInterface" checked> BusinessInterface</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessObject" checked> BusinessObject</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessProcess" checked> BusinessProcess</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessRole" checked> BusinessRole</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="BusinessService" checked> BusinessService</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="Contract" checked> Contract</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="Product" checked> Product</label>
+          <label><input type="checkbox" class="facet-value" data-group="business" value="Representation" checked> Representation</label>
+        </div>
+      </div>
+
+      <!-- Application Facet Group -->
+      <div class="facet-group" id="facet-application">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-application" value = "Application" checked>
+          Application
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationComponent" checked> ApplicationComponent</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationCollaboration" checked> ApplicationCollaboration</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationEvent" checked> ApplicationEvent</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationFunction" checked> ApplicationFunction</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationInteraction" checked> ApplicationInteraction</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationInterface" checked> ApplicationInterface</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationProcess" checked> ApplicationProcess</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="ApplicationService" checked> ApplicationService</label>
+          <label><input type="checkbox" class="facet-value" data-group="application" value="DataObject" checked> DataObject</label>
+        </div>
+      </div>
+
+      <!-- Technology Facet Group -->
+      <div class="facet-group" id="facet-technology">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-technology" value = "Technology" checked>
+          Technology
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="Artifact" checked> Artifact</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="CommunicationNetwork" checked> CommunicationNetwork</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="Device" checked> Device</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="Node" checked> Node</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="Path" checked> Path</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="SystemSoftware" checked> SystemSoftware</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyCollaboration" checked> TechnologyCollaboration</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyEvent" checked> TechnologyEvent</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyFunction" checked> TechnologyFunction</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyInteraction" checked> TechnologyInteraction</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyInterface" checked> TechnologyInterface</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyProcess" checked> TechnologyProcess</label>
+          <label><input type="checkbox" class="facet-value" data-group="technology" value="TechnologyService" checked> TechnologyService</label>
+        </div>
+      </div>
+
+      <!-- Physical Facet Group -->
+      <div class="facet-group" id="facet-physical">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-physical" value = "Physical" checked>
+          Physical
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="physical" value="Distribution Network" checked> Distribution Network</label>
+          <label><input type="checkbox" class="facet-value" data-group="physical" value="Equipment" checked> Equipment</label>
+          <label><input type="checkbox" class="facet-value" data-group="physical" value="Facility" checked> Facility</label>
+          <label><input type="checkbox" class="facet-value" data-group="physical" value="Material" checked> Material</label>
+        </div>
+      </div>
+
+      <!-- Implementation & Migration Facet Group -->
+      <div class="facet-group" id="facet-impl">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-impl" value = "Impl" checked>
+          Implementation &amp; Migration
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="impl" value="Deliverable" checked> Deliverable</label>
+          <label><input type="checkbox" class="facet-value" data-group="impl" value="Gap" checked> Gap</label>
+          <label><input type="checkbox" class="facet-value" data-group="impl" value="ImplementationEvent" checked> ImplementationEvent</label>
+          <label><input type="checkbox" class="facet-value" data-group="impl" value="Plateau" checked> Plateau</label>
+          <label><input type="checkbox" class="facet-value" data-group="impl" value="WorkPackage" checked> WorkPackage</label>
+        </div>
+      </div>
+
+      <!-- Motivation Facet Group -->
+      <div class="facet-group" id="facet-motivation">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-motivation" value = "Motivation" checked>
+          Motivation
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Assessment" checked> Assessment</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Constraint" checked> Constraint</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Driver" checked> Driver</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Goal" checked> Goal</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Meaning" checked> Meaning</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Outcome" checked> Outcome</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Principle" checked> Principle</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Requirement" checked> Requirement</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Stakeholder" checked> Stakeholder</label>
+          <label><input type="checkbox" class="facet-value" data-group="motivation" value="Value" checked> Value</label>
+        </div>
+      </div>
+
+      <!-- Composite Elements (new group) -->
+      <div class="facet-group" id="facet-composite">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-composite" value = "Composite" checked>
+          Composite Elements
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="composite" value="Grouping" checked> Grouping</label>
+          <label><input type="checkbox" class="facet-value" data-group="composite" value="Location" checked> Location</label>
+        </div>
+      </div>
+
+      <!-- Relationship Connectors (new group) -->
+      <div class="facet-group" id="facet-connectors">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-connectors" value = "Connectors" checked>
+          Relationship Connectors
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="connectors" value="AndJunction" checked> AndJunction</label>
+          <label><input type="checkbox" class="facet-value" data-group="connectors" value="OrJunction" checked> OrJunction</label>
+        </div>
+      </div>
+
+      <!-- Relationship Types Facet Group -->
+      <div class="facet-group" id="facet-relationships">
+        <h4>
+          <span class="dropdown-icon">▶</span>
+          <input type="checkbox" class="layerCheckbox" id="group-relationships" value = "Relationships" checked>
+          Relationship Types
+        </h4>
+        <div class="facet-values">
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Access" checked> Access</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Aggregation" checked> Aggregation</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Assignment" checked> Assignment</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Association" checked> Association</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Composition" checked> Composition</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Flow" checked> Flow</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Influence" checked> Influence</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Realization" checked> Realization</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Serving" checked> Serving</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Specialization" checked> Specialization</label>
+          <label><input type="checkbox" class="facet-value" data-group="relationships" value="Triggering" checked> Triggering</label>
+        </div>
+      </div>
+
+      <!-- Neighborhood Depth + Apply Button -->
+      <div id="bfsFilter-container" class="filter-container">
+        <label for="depthInput">Select element to neighborhood depth:</label>
+        <input type="number" id="depthInput" min="1" max="10" value="2" style="width:3em;">
+      </div>
+      <button id="applyFiltersBtn">Apply Global Filters</button>
+
+    </div>
 
       <!-- Main Content: Graph Display -->
       <div id="main-content">

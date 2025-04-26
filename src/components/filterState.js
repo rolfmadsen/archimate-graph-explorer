@@ -2,9 +2,9 @@
 
 // Central, reactive facet state
 let state = {
-  layers: ["Business", "Application", "Technology"], // defaults
-  elementTypes: [],          // empty ⇒ no restriction
-  relationshipTypes: [],     // empty ⇒ no edges
+  layers: [],
+  elementTypes: [],
+  relationshipTypes: [],
 };
 
 const subscribers = [];
